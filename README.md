@@ -25,17 +25,17 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
     yarn install
     ```
 
-2. Install dependencies:
+2. Install tcp-socket:
     ```bash
     yarn add react-native-tcp-socket
     ```
 
-3. Install dependencies:
+3. Install zpl-code:
     ```bash
     yarn add react-native-zpl-code
     ```
 
-4. Install dependencies:
+4. Install webview:
     ```bash
     yarn react-native-webview
     ```

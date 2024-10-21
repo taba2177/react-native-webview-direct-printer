@@ -1,0 +1,12 @@
+
+# React Native
+node_modules/
+android/
+ios/
+.idea/
+*.iml
+*.log
+*.tmp
+*.swp
+.expo
+*.lock

@@ -52,6 +52,8 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
 ## Configuration
 - Update the WebView `source` URI with the correct URL for displaying the invoice.
 - Change the printer IP address and port (default is `192.168.1.100:9100`) to match your printer configuration.
+- Generate ZPL command from the URL parameters
+
 
 ## License
 This project is licensed under the MIT License.

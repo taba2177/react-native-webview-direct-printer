@@ -102,7 +102,7 @@ const App = () => {
         onMessage={(event) => console.log('Message from WebView:', event.nativeEvent.data)}
         javaScriptEnabled={true}
         cacheEnabled={false}
-        source={{ uri: 'http://192.168.8.174:5500' }} // Update with correct URL
+        source={{ uri: 'http://127.0.0.1/redirect' }} // Update with correct URL
         style={{ flex: 1 }}
         onNavigationStateChange={handleWebViewNavigationStateChange}
       />

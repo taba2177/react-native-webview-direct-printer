@@ -74,7 +74,7 @@ const App = () => {
 
   // Send the ZPL command to the printer
   const sendToPrinter = (zplCommandString) => {
-    const client = Net.createConnection({ host: '192.168.1.100#', port: 9100 }, () => {
+    const client = Net.createConnection({ host: '192.168.1.100', port: 9100 }, () => {
       client.write(zplCommandString, 'utf-8');
       client.end();
     });

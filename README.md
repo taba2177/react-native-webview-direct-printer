@@ -2,7 +2,8 @@
 # React Native WebView ZPL Printer
 
 This project demonstrates how to generate ZPL (Zebra Programming Language) code from a WebView in React Native and send it to a Zebra printer over TCP.
-    // Automatically trigger ZPL generation if the URL contains 'print'
+    
+// Automatically trigger ZPL generation if the URL contains 'print'
 
 ## Features
 - Display an invoice from a URL in a WebView

@@ -34,62 +34,48 @@ const App = () => {
   };
 
   // Extract content from WebView (if needed)
-  const extractInvoiceContentFromWebView = () => {
-    return webViewRef.current.injectJavaScript(`
-      (function() {
-        const inv = document.documentElement.outerHTML;
-        window.ReactNativeWebView.postMessage(inv);
-        window.history.back();
-        return inv;
-      })();
-    `);
-  };
+    const extractInvoiceContentFromWebView = () => {
+      return webViewRef.current.injectJavaScript(`
+        (function() {
+          const inv = document.documentElement.outerHTML;
+          window.ReactNativeWebView.postMessage(inv);
+          window.history.back();
+          return inv;
+        })();
+      `);
+    };
 
-  // Generate ZPL command from the URL parameters
-  const generateZPLFromUrl = (url) => {
-    const urlParams = new URLSearchParams(url);
-    const invoiceNumber = urlParams.get("invoice");
-    const customerName = urlParams.get("customer");
-    const date = urlParams.get("date");
-    const amountDue = urlParams.get("amount");
+    // Generate ZPL command from the URL parameters
+    const generateZPLFromUrl = (url) => {
+      const urlParams = new URLSearchParams(url);
 
-    // Build the ZPL command
-    const zplBuilder = new Zpl.Builder();
-    zplBuilder.setup({
-      size: { heightDots: 609, widthDots: 609 },
-      labelHome: { x: 0, y: 0 },
-      orientation: "NORMAL",
-      media: { type: "MARK_SENSING", dots: 24 },
-    });
+      // Build the ZPL command
+      const zplBuilder = new Zpl.Builder();
+      zplBuilder.setup({
+        size: { heightDots: 609, widthDots: 609 },
+        labelHome: { x: 0, y: 0 },
+        orientation: "NORMAL",
+        media: { type: "MARK_SENSING", dots: 24 },
+      });
 
-    zplBuilder.text({
-      x: 50,
-      y: 50,
-      font: { type: "A", h: 20, w: 10 },
-      text: `Invoice No: ${invoiceNumber}`,
-    });
-    zplBuilder.text({
-      x: 50,
-      y: 100,
-      font: { type: "A", h: 20, w: 10 },
-      text: `Date: ${date}`,
-    });
-    zplBuilder.text({
-      x: 50,
-      y: 150,
-      font: { type: "A", h: 20, w: 10 },
-      text: `Customer: ${customerName}`,
-    });
-    zplBuilder.text({
-      x: 50,
-      y: 200,
-      font: { type: "A", h: 20, w: 10 },
-      text: `Amount Due: ${amountDue}`,
-    });
+      // Loop through all URL parameters and add them to the label
+      let yPosition = 50; // Initial Y position for the first text
+      for (const [key, value] of urlParams.entries()) {
+        zplBuilder.text({
+          x: 50,
+          y: yPosition,
+          font: { type: "A", h: 20, w: 10 },
+          text: `${key}: ${value}`, // Dynamic key-value pair
+        });
 
-    const zplCommandObj = zplBuilder.build();
-    return zplCommandObj._j; // Extract ZPL string
-  };
+        // Increment yPosition for the next line of text
+        yPosition += 50;
+      }
+
+      const zplCommandObj = zplBuilder.build();
+      return zplCommandObj._j; // Extract ZPL string
+    };
+
 
   // Send the ZPL command to the printer
   const sendToPrinter = (zplCommandString) => {

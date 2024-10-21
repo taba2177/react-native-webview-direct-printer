@@ -16,35 +16,36 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
 1. Clone this repository:
     ```bash
     git clone https://github.com/taba2177/react-native-webview-direct-printer.git
+
     cd react-native-webview-direct-printer
     ```
 
-2. Install dependencies:
+1. Install dependencies:
     ```bash
     yarn install
     ```
 
-3. Install dependencies:
+2. Install dependencies:
     ```bash
     yarn add react-native-tcp-socket
     ```
 
-4. Install dependencies:
+3. Install dependencies:
     ```bash
     yarn add react-native-zpl-code
     ```
 
-5. Install dependencies:
+4. Install dependencies:
     ```bash
     yarn react-native-webview
     ```
 
-6. Start the project:
+5. Start the project:
     ```bash
     npx react-native run-android
     ```
 
-    or for iOS:
+6.  or for iOS:
     ```bash
     npx react-native run-ios
     ```
@@ -52,7 +53,7 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
 ## Configuration
 - Update the WebView `source` URI with the correct URL for displaying the invoice.
 - Change the printer IP address and port (default is `192.168.1.100:9100`) to match your printer configuration.
-- Generate ZPL command from the URL parameters
+- Generate ZPL command from the URL parameters.
 
 
 ## License

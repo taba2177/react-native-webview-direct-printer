@@ -13,15 +13,15 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
 
 1. Clone this repository:
     ```bash
-    git clone https://github.com/your-username/react-native-zpl-printer.git
-    cd react-native-zpl-printer
+    git clone https://github.com/your-username/react-native-webview-direct-printer.git
+    cd react-native-webview-direct-printer
     ```
 
 2. Install dependencies:
     ```bash
     yarn install
     ```
-    
+
 3. Install dependencies:
     ```bash
     yarn add react-native-tcp-socket

@@ -5,6 +5,9 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
     
 // Automatically trigger ZPL generation if the URL contains 'print'
 
+
+# You need to set up the printing service from the settings on your Android device, and the appropriate driver for your printer will be downloaded.
+
 ## Features
 - Display an invoice from a URL in a WebView
 - Automatically detect URL changes and generate ZPL when the URL contains specific parameters

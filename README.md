@@ -34,7 +34,7 @@ This project demonstrates how to generate ZPL (Zebra Programming Language) code 
 
     yarn add react-native-zpl-code
     
-    yarn react-native-webview
+    yarn add react-native-webview
 
 
 5. Start the project:

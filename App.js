@@ -1,128 +1,41 @@
-import React, { useRef, useState } from "react";
-import { View, Button, Alert } from "react-native";
-import { WebView } from "react-native-webview";
-import { Zpl } from "react-native-zpl-code";
-import Net from "react-native-tcp-socket";
+import React from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createStackNavigator } from "@react-navigation/stack";
+import HomeScreen from "./screens/HomeScreen";
+import SettingsScreen from "./screens/SettingsScreen";
+import Icon from "react-native-vector-icons/Ionicons"; // Icon for the settings button
+
+const Stack = createStackNavigator();
 
 const App = () => {
-  const webViewRef = useRef(null);
-  const [currentUrl, setCurrentUrl] = useState("");
-
-  // Monitor URL changes in the WebView
-  const handleWebViewNavigationStateChange = (newNavState) => {
-    const { url } = newNavState;
-    setCurrentUrl(url);
-
-    // Automatically trigger ZPL generation if the URL contains 'print'
-    if (url.includes("print")) {
-      handleGenerateZPL(url);
-    }
-  };
-
-  // Function to extract and generate ZPL from the WebView
-  const handleGenerateZPL = async (url) => {
-    try {
-      const extractedHtml = await extractInvoiceContentFromWebView();
-      const zplCommand = generateZPLFromUrl(url);
-
-      if (!zplCommand) throw new Error("Failed to generate ZPL");
-      sendToPrinter(zplCommand);
-    } catch (error) {
-      Alert.alert("Error", "Failed to generate ZPL");
-      console.error(error);
-    }
-  };
-
-  // Extract content from WebView (if needed)
-    const extractInvoiceContentFromWebView = () => {
-      return webViewRef.current.injectJavaScript(`
-        (function() {
-          const inv = document.documentElement.outerHTML;
-          window.ReactNativeWebView.postMessage(inv);
-          window.history.back();
-          return inv;
-        })();
-      `);
-    };
-
-    // Generate ZPL command from the URL parameters
-    const generateZPLFromUrl = (url) => {
-      const urlParams = new URLSearchParams(url);
-
-      // Build the ZPL command
-      const zplBuilder = new Zpl.Builder();
-      zplBuilder.setup({
-        size: { heightDots: 609, widthDots: 609 },
-        labelHome: { x: 0, y: 0 },
-        orientation: "NORMAL",
-        media: { type: "MARK_SENSING", dots: 24 },
-      });
-
-      // Loop through all URL parameters and add them to the label
-      let yPosition = 50; // Initial Y position for the first text
-      for (const [key, value] of urlParams.entries()) {
-        zplBuilder.text({
-          x: 50,
-          y: yPosition,
-          font: { type: "A", h: 20, w: 10 },
-          text: `${key}: ${value}`, // Dynamic key-value pair
-        });
-
-        // Increment yPosition for the next line of text
-        yPosition += 50;
-      }
-
-      const zplCommandObj = zplBuilder.build();
-      return zplCommandObj._j; // Extract ZPL string
-    };
-
-
-  // Send the ZPL command to the printer
-  const sendToPrinter = (zplCommandString) => {
-    const client = Net.createConnection(
-      { host: "192.168.1.100", port: 9100 },
-      () => {
-        client.write(zplCommandString, "utf-8");
-        client.end();
-      },
-    );
-
-    client.on("data", (data) => {
-      console.log("Printer response:", data.toString());
-    });
-
-    client.on("error", (error) => {
-      Alert.alert("Error", "Failed to connect to printer");
-      console.error(error);
-    });
-
-    client.on("close", () => {
-      console.log("Connection closed");
-    });
-  };
-
   return (
-    <View style={{ flex: 1 }}>
-      {/* WebView displaying the invoice */}
-      <WebView
-        ref={webViewRef}
-        originWhitelist={["*"]}
-        onMessage={(event) =>
-          console.log("Message from WebView:", event.nativeEvent.data)
-        }
-        javaScriptEnabled={true}
-        cacheEnabled={false}
-        source={{ uri: "http://127.0.0.1/redirect" }} // Update with correct URL
-        style={{ flex: 1 }}
-        onNavigationStateChange={handleWebViewNavigationStateChange}
-      />
-
-      {/* Button to manually trigger ZPL generation */}
-      <Button
-        title="Generate ZPL Manually"
-        onPress={() => handleGenerateZPL(currentUrl)}
-      />
-    </View>
+    <NavigationContainer>
+      <Stack.Navigator
+        screenOptions={{
+          headerStyle: { backgroundColor: "#4CAF50" },
+          headerTintColor: "#fff",
+          headerTitleStyle: { fontWeight: "bold" },
+        }}
+      >
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
+          options={({ navigation }) => ({
+            title: "Invoice Printer",
+            headerRight: () => (
+              <Icon
+                name="settings"
+                size={25}
+                color="#fff"
+                style={{ marginRight: 15 }}
+                onPress={() => navigation.navigate("Settings")}
+              />
+            ),
+          })}
+        />
+        <Stack.Screen name="Settings" component={SettingsScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 };
 

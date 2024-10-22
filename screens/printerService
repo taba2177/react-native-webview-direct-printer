@@ -1,0 +1,99 @@
+import Net from "react-native-tcp-socket";
+import { Zpl } from "react-native-zpl-code";
+
+// Function to generate ZPL string
+export const generateZPL = async (
+  url,
+  imageUrl = "http://127.0.0.1:5500/print/1.png"
+) => {
+  try {
+    const zplBuilder = new Zpl.Builder();
+
+    // Setup label configuration for ZPL
+    zplBuilder.setup({
+      size: { heightDots: 609, widthDots: 609 },
+      labelHome: { x: 0, y: 0 },
+      orientation: "NORMAL",
+      media: { type: "MARK_SENSING", dots: 24 },
+    });
+
+    // Handle image URL from the parameters
+    const imageData = await fetchAndConvertImageToZPL(imageUrl); // Assuming it's an image URL
+    zplBuilder.image({
+      x: 50,
+      y: 50,
+      data: imageData,
+    });
+
+    // Generate the ZPL command
+    const zplCommandObj = zplBuilder.build();
+
+    // Extract the ZPL string from the object
+    const zplCommand = zplCommandObj._j;
+
+    if (typeof zplCommand !== "string") {
+      throw new Error("Failed to extract ZPL command string");
+    }
+
+    return zplCommand;
+  } catch (error) {
+    console.error("Error generating ZPL:", error);
+    throw error;
+  }
+};
+
+// Function to fetch and convert an image URL to ZPL format
+export const fetchAndConvertImageToZPL = async (imageUrl) => {
+  try {
+    // Fetch the image data
+    console.log(imageUrl);
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+
+    // Convert the image to a ZPL-compatible format (using base64 encoding)
+    const reader = new FileReader();
+    reader.readAsDataURL(blob);
+
+    return new Promise((resolve, reject) => {
+      reader.onloadend = () => {
+        const base64data = reader.result;
+        const zplImageData = convertBase64ToZPL(base64data); // Convert to ZPL format
+        resolve(zplImageData);
+      };
+      reader.onerror = reject;
+    });
+  } catch (error) {
+    console.error("Error fetching and converting image:", error);
+    throw error;
+  }
+};
+
+// Convert base64 data to ZPL format (custom function, adjust as necessary)
+export const convertBase64ToZPL = (base64data) => {
+  const zplImageData = `^GFA,${base64data}`;
+  return zplImageData;
+};
+
+// Function to send ZPL command to the printer
+export const sendToPrinter = (zplCommandString) => {
+  const client = Net.createConnection(
+    { host: "192.168.1.100", port: 9100 },
+    () => {
+      // Send the ZPL string to the printer
+      client.write(zplCommandString, "utf-8");
+      client.end();
+    }
+  );
+
+  client.on("data", (data) => {
+    console.log("Printer response:", data.toString());
+  });
+
+  client.on("error", (error) => {
+    console.error("Error connecting to the printer:", error);
+  });
+
+  client.on("close", () => {
+    console.log("Connection closed");
+  });
+};

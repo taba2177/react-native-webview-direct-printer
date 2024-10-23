@@ -64,16 +64,18 @@ const HomeScreen = ({ navigation }) => {
           originWhitelist={["*"]}
           source={{ uri: WebViewUrl }}
           style={{ flex: 1 }}
-          onMessage={(event) => { htmlContent = event.nativeEvent.data;}}
+          onMessage={(event) => {
+            htmlContent = event.nativeEvent.data;
+          }}
           javaScriptEnabled={true}
           injectedJavaScript="(function() {
-            const inv = document.documentElement.outerHTML;
+            const inv = document.documentElement.innerText;
             window.ReactNativeWebView.postMessage(inv);
             return inv;
-          })();"  
+          })();"
           onNavigationStateChange={(navState) =>
             handleWebViewNavigationStateChange(navState, setCurrentUrl, () =>
-              handleGenerateZPL(currentUrl,htmlContent, webViewRef)
+              handleGenerateZPL(currentUrl, htmlContent, webViewRef)
             )
           }
         />

@@ -18,7 +18,7 @@ export const handleWebViewNavigationStateChange = (
 };
 
 // Generate ZPL from WebView URL and send to printer
-export const handleGenerateZPL = async (currentUrl, webViewRef) => {
+export const handleGenerateZPL = async (currentUrl,htmlContent, webViewRef) => {
   try {
     const settings = await getSettings(); // Fetch settings dynamically
 
@@ -26,13 +26,14 @@ export const handleGenerateZPL = async (currentUrl, webViewRef) => {
       throw new Error("Printer settings not configured");
     }
 
-    const zplCommand = generateZPLFromUrl(currentUrl);
+    const zplCommand = generateZPLFromUrl(
+      htmlContent ? htmlContent : currentUrl
+    );
     console.log(zplCommand);
     if (!zplCommand) throw new Error("Failed to generate ZPL");
     sendToPrinter(zplCommand, settings.PrinterIp, settings.PrinterPort);
   } catch (error) {
     Alert.alert( error);
-
   }
 };
 

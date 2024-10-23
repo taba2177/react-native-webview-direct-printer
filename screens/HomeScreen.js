@@ -13,53 +13,44 @@ import {
 } from "../controllers/printController";
 import { getSettings } from "../utils/storage";
 
-const POLLING_INTERVAL = 5000; // Poll every 5 seconds
-
 const HomeScreen = ({ navigation }) => {
   const webViewRef = useRef(null);
   const [currentUrl, setCurrentUrl] = useState("");
+  const [htmlContent, setHtmlContent] = useState("");
   const [WebViewUrl, setWebViewUrl] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Function to load settings
-  const loadSettings = async () => {
-    setLoading(true);
-    setError(null); // Reset error
-    try {
-      const settings = await getSettings();
-      if (settings && settings.WebViewUrl) {
-        setWebViewUrl(settings.WebViewUrl);
-      } else {
-        throw new Error("WebView URL not found in settings");
-      }
-    } catch (error) {
-      setError(error.message || "Error fetching settings");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Periodically check if settings have changed
+  // Fetch settings on component mount
   useEffect(() => {
-    let intervalId;
-
-    const startPolling = () => {
-      intervalId = setInterval(async () => {
+    const fetchSettings = async () => {
+      try {
         const settings = await getSettings();
-        if (settings?.WebViewUrl && settings.WebViewUrl !== WebViewUrl) {
-          setWebViewUrl(settings.WebViewUrl); // Automatically update URL
+        if (settings?.WebViewUrl) {
+          setWebViewUrl(settings.WebViewUrl);
+          setError(null);
+        } else {
+          setError(
+            "WebView URL not found in settings. Please update the settings."
+          );
         }
-      }, POLLING_INTERVAL);
+      } catch (err) {
+        setError("Error fetching settings.");
+      } finally {
+        setLoading(false);
+      }
     };
 
-    loadSettings(); // Load settings on mount
-    startPolling(); // Start polling
+    fetchSettings();
+  }, []);
 
-    // Cleanup polling on unmount
-    return () => clearInterval(intervalId);
-  }, [WebViewUrl]);
+  // Function to reload WebView
+  const reloadWebView = () => {
+    setError(null);
+    webViewRef.current?.reload();
+  };
 
+  // Show loading screen while fetching settings
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
@@ -69,26 +60,41 @@ const HomeScreen = ({ navigation }) => {
     );
   }
 
+  // Show error message if there's an issue fetching settings
   if (error) {
     return (
       <View style={styles.errorContainer}>
         <Text style={styles.errorText}>{error}</Text>
-        <Button title="Retry" onPress={loadSettings} color="#4CAF50" />
+        <Button title="Reload" onPress={reloadWebView} />
       </View>
     );
   }
 
+  // Handle messages from WebView (e.g., extracting invoice data)
+  const handleMessage = (event) => {
+    const data = event.nativeEvent.data;
+    setHtmlContent(data); // Update HTML content state with the WebView data
+  };
+
   return (
-    <View style={styles.container}>
+    <View style={{ flex: 1 }}>
       {WebViewUrl ? (
         <WebView
           ref={webViewRef}
           originWhitelist={["*"]}
           source={{ uri: WebViewUrl }}
           style={{ flex: 1 }}
+          cacheEnabled={false}
+          javaScriptEnabled={true}
+          injectedJavaScript={`(function() {
+            const inv = document.documentElement.innerText;
+            window.ReactNativeWebView.postMessage(inv);
+            return inv;
+          })();`}
+          onMessage={handleMessage}
           onNavigationStateChange={(navState) =>
             handleWebViewNavigationStateChange(navState, setCurrentUrl, () =>
-              handleGenerateZPL(currentUrl, webViewRef)
+              handleGenerateZPL(currentUrl, htmlContent, webViewRef)
             )
           }
         />
@@ -97,11 +103,7 @@ const HomeScreen = ({ navigation }) => {
           <Text style={styles.errorText}>
             Invalid WebView URL. Please check the settings.
           </Text>
-          <Button
-            title="Reload Settings"
-            onPress={loadSettings}
-            color="#4CAF50"
-          />
+          <Button title="Reload" onPress={reloadWebView} />
         </View>
       )}
     </View>
@@ -109,33 +111,10 @@ const HomeScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f8f9fa",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
-  },
-  loadingText: {
-    marginTop: 10,
-    fontSize: 16,
-    color: "#4CAF50",
-  },
-  errorContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 20,
-  },
-  errorText: {
-    color: "red",
-    fontSize: 18,
-    marginBottom: 20,
-    textAlign: "center",
-  },
+  loadingContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  loadingText: { marginTop: 10, fontSize: 16, color: "#4CAF50" },
+  errorContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
+  errorText: { color: "red", fontSize: 16, marginBottom: 20 },
 });
 
 export default HomeScreen;

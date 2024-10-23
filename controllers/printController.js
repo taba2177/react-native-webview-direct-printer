@@ -19,7 +19,7 @@ export const handleWebViewNavigationStateChange = (
 
 // Generate ZPL from WebView URL and send to printer
 export const handleGenerateZPL = async (currentUrl,htmlContent, webViewRef) => {
-  try {
+  try {console.log(htmlContent);
     const settings = await getSettings(); // Fetch settings dynamically
 
     if (!settings || !settings.PrinterIp || !settings.PrinterPort) {

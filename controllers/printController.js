@@ -87,7 +87,7 @@ const sendViaTcp = (escPosCommandString, printerIp, printerPort) => {
     );
 
     client.on("error", (error) => {
-      reject(new Error("TCP connection error: " + error.message));
+      reject(new Error("TCP connection error: " + error));
     });
 
     client.on("close", () => {

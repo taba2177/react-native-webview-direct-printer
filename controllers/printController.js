@@ -11,7 +11,7 @@ export const handleWebViewNavigationStateChange = (
   const { url } = navState;
   setCurrentUrl(url);
 
-  // Trigger the print when URL contains the "print" keyword
+  // Trigger the print when URL contains the "print" keyword 
   if (url.includes("print")) {
     onPrintTrigger();
   }

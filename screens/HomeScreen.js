@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
 import { WebView } from "react-native-webview";
 import {
   handleWebViewNavigationStateChange,
-  handleGenerateZPL,
+  handleGenerateESC,
 } from "../controllers/printController";
 import { getSettings } from "../utils/storage";
 
@@ -21,33 +21,36 @@ const HomeScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Fetch settings on component mount
-  useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const settings = await getSettings();
-        if (settings?.WebViewUrl) {
-          setWebViewUrl(settings.WebViewUrl);
-          setError(null);
-        } else {
-          setError(
-            "WebView URL not found in settings. Please update the settings."
-          );
-        }
-      } catch (err) {
-        setError("Error fetching settings.");
-      } finally {
-        setLoading(false);
+  // Function to fetch settings and update WebView URL
+  const fetchSettings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const settings = await getSettings();
+      if (settings?.WebViewUrl) {
+        setWebViewUrl(settings.WebViewUrl);
+        setError(null);
+      } else {
+        setError(
+          "WebView URL not found in settings. Please update the settings."
+        );
       }
-    };
-
-    fetchSettings();
+    } catch (err) {
+      setError("Error fetching settings.");
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  // Function to reload WebView
+  // Fetch settings on component mount
+  useEffect(() => {
+    fetchSettings();
+  }, [fetchSettings]);
+
+  // Function to reload WebView and re-fetch settings
   const reloadWebView = () => {
     setError(null);
-    webViewRef.current?.reload();
+    fetchSettings(); // Re-fetch settings to get the updated URL
+    webViewRef.current?.reload(); // Reload WebView after updating URL
   };
 
   // Show loading screen while fetching settings
@@ -94,7 +97,7 @@ const HomeScreen = ({ navigation }) => {
           onMessage={handleMessage}
           onNavigationStateChange={(navState) =>
             handleWebViewNavigationStateChange(navState, setCurrentUrl, () =>
-              handleGenerateZPL(currentUrl, htmlContent, webViewRef)
+              handleGenerateESC(currentUrl, htmlContent, webViewRef)
             )
           }
         />
